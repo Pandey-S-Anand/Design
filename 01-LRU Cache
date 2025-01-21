@@ -177,14 +177,14 @@ class LRUCache {
             node.pair.value = value; // Update the value if the key already exists
             moveToEnd(node); // Move the updated node to the end (MRU)
         } else {
-            Node newNode = new Node(key, value);
-            cache.put(key, newNode);
-            append(newNode); // Add the new node as the most recently used
-
-            if (cache.size() > capacity) {
+            if (cache.size() == capacity) {
                 // If the cache exceeds the capacity, remove the least recently used node
                 removeLruNode();
             }
+
+            Node newNode = new Node(key, value);
+            cache.put(key, newNode);
+            append(newNode); // Add the new node as the most recently used
         }
     }
 }

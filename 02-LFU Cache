@@ -1,0 +1,164 @@
+class LFUCache {
+    private final int capacity; // Maximum capacity of the cache
+    private int minFrequency; // Tracks the minimum frequency in the cache
+    private final Map<Integer, Node> cache; // Maps key -> corresponding node
+    /**
+     * This 'freqToDLL' map stores a mapping of frequency to a Doubly Linked List (DLL).
+     * 
+     * Why do we need this?
+     * 
+     * 1. **Multiple Nodes Can Have the Same Frequency**
+     * - If multiple nodes have the same frequency, we need a way to track them.
+     * - freqToDLL maps each frequency to a DLL that stores all nodes with that frequency.
+     * 
+     * 2. **Maintaining LRU Order Within the Same Frequency**
+     * - Since we need to evict the **Least Recently Used (LRU) node** among nodes with the same frequency, using a DLL is efficient.
+     * - We **insert new nodes at the back** (most recently used).
+     * - We **remove nodes from the front** when eviction is needed (since the front node is the least recently used).
+     */
+    private final Map<Integer, DoublyLinkedList> freqToNodes; // Maps frequency -> DLL of nodes with that frequency
+
+    public LFUCache(int capacity) {
+        this.capacity = capacity;
+        this.minFrequency = 0;
+        this.cache = new HashMap<>();
+        this.freqToNodes = new HashMap<>();
+    }
+
+    public int get(int key) {
+        if (!cache.containsKey(key)) {
+            return -1; // Key not found
+        }
+
+        Node node = cache.get(key);
+        updateFrequency(node); // Increase the frequency of the accessed node
+        return node.value;
+    }
+
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            // If key already exists, update its value and increase its frequency
+            Node node = cache.get(key);
+            node.value = value;
+            updateFrequency(node);
+            return;
+        }
+
+        if (cache.size() == capacity) {
+            removeLFUNode(); // If cache is full, remove the least frequently used (LFU) node
+        }
+
+        // Insert the new node with frequency 1
+        Node newNode = new Node(key, value);
+        cache.put(key, newNode);
+        minFrequency = 1; // Since a new node has frequency 1, minFrequency is updated
+
+        freqToNodes.putIfAbsent(1, new DoublyLinkedList());
+        freqToNodes.get(1).insertAtBack(newNode); // Insert the new node at the back (most recently used)
+    }
+
+    private void updateFrequency(Node node) {
+        int oldFrequency = node.frequency;
+        DoublyLinkedList frequencyDLL = freqToNodes.get(oldFrequency);
+        frequencyDLL.removeNode(node); // Remove the node from its current frequency DLL
+
+        // If the frequency DLL is now empty, remove it from the map
+        if (frequencyDLL.isEmpty()) {
+            freqToNodes.remove(oldFrequency);
+            // If the removed frequency was the minimum, update minFreq
+            if (minFrequency == oldFrequency) {
+                minFrequency++;
+            }
+        }
+
+        // Increase the frequency of the node
+        node.frequency++;
+
+        // Insert the node into the DLL corresponding to the new frequency
+        freqToNodes.putIfAbsent(node.frequency, new DoublyLinkedList());
+        freqToNodes.get(node.frequency).insertAtBack(node); // Insert at the back (most recently used)
+    }
+
+    private void removeLFUNode() {
+        // Get the DLL containing the LFU nodes
+        DoublyLinkedList minFreqDll = freqToNodes.get(minFrequency);
+
+        // Remove the least recently used (LRU) node from the front of the DLL
+        Node nodeToRemove = minFreqDll.removeFront();
+        cache.remove(nodeToRemove.key); // Remove from cache as well
+
+        // If the minFreqDll is empty after removal, delete the frequency mapping
+        if (minFreqDll.isEmpty()) {
+            freqToNodes.remove(minFrequency);
+        }
+    }
+}
+
+class Node {
+    int key, value, frequency;
+    Node previous, next;
+
+    Node(int key, int value) {
+        this.key = key;
+        this.value = value;
+        this.frequency = 1; // New node starts with frequency 1
+    }
+}
+
+class DoublyLinkedList {
+    Node head, tail; // Head -> Least Recently Used (LRU), Tail -> Most Recently Used (MRU)
+
+    DoublyLinkedList() {
+        this.head = null;
+        this.tail = null;
+    }
+
+    void insertAtBack(Node node) {
+        // If DLL is empty, initialize head and tail
+        if (head == null) {
+            head = tail = node;
+            node.previous = node.next = null;
+        } else {
+            // Insert at the back (MRU position)
+            node.previous = tail;
+            node.next = null;
+            tail.next = node;
+            tail = node;
+        }
+    }
+
+    Node removeFront() { // Remove the LRU node (front of DLL)
+        Node first = head;
+        head = head.next;
+
+        if (head == null) {
+            tail = null; // If only one node was present, update tail as well
+        } else {
+            head.previous = null;
+        }
+        return first;
+    }
+
+    void removeNode(Node node) {
+        if (node == head) {
+            // If the node is the head, update head reference
+            removeFront();
+            return;
+        }
+
+        if (node == tail) {
+            // If the node is the tail, update tail reference
+            tail = node.previous;
+            tail.next = null;
+            return;
+        }
+
+        // General case: remove node from middle
+        node.previous.next = node.next;
+        node.next.previous = node.previous;
+    }
+
+    boolean isEmpty() {
+        return head == null;
+    }
+}

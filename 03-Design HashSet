@@ -1,0 +1,36 @@
+//Bruteforce approach
+
+class MyHashSet {
+    // The maximum possible key value in the HashSet (up to 10^6 as per the constraints)
+    public static final int MAX_SIZE = 1000001;
+    /*
+     * Array to store the existence of keys in the HashSet.
+     * The index represents the key, and the value at that index indicates whether
+     * the key is present (true) or not (false).
+     */
+    private boolean[] set;
+
+    public MyHashSet() {
+        //Initialize the boolean array with size MAX_SIZE. All values are set to false initially, indicating no keys are present.
+        set = new boolean[MAX_SIZE];
+    }
+
+    public void add(int key) {
+        // Set the value at the index corresponding to the key to true,indicating the key is present in the set
+        set[key] = true;
+    }
+
+    public void remove(int key) {
+        // Set the value at the index corresponding to the key to false, indicating the key is no longer in the set.
+        set[key] = false;
+    }
+
+    public boolean contains(int key) {
+        // Return the value at the index corresponding to the key. If true, the key exists in the set, otherwise it does not.
+        return set[key];
+    }
+}
+
+
+//Optimal approach
+

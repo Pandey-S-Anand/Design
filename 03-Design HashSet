@@ -134,14 +134,14 @@ class MyHashSet {
 
     public boolean contains(int key) {
         int index = hash(key); // Calculate the bucket index for the key.
-        Node current = buckets[index]; // Start from the head of the list in the bucket.
+        Node current = buckets[index]; // Start from the head of the singly linked list in the bucket.
         
-        // Traverse the list in the bucket to search for the key.
+        // Traverse the singly linked list in the bucket to search for the key.
         while (current != null) {
             if (current.data == key) {
                 return true; // Key found.
             }
-            current = current.next; // Move to the next node.
+            current = current.next;
         }
         return false; // Key not found.
     }

@@ -115,6 +115,143 @@ minFreq: 2
 Output: 11
 */
 
+//Naive implementation
+
+class LFUCache {
+    private final int capacity;
+    private final Map<Integer, Node> cache;
+    private final TreeMap<Integer, DoublyLinkedList> freqToNodes;
+
+    public LFUCache(int capacity) {
+        this.capacity = capacity;
+        this.cache = new HashMap<>();
+        this.freqToNodes = new TreeMap<>();
+    }
+
+    public int get(int key) {
+        if (!cache.containsKey(key)) {
+            return -1;
+        }
+
+        Node node = cache.get(key);
+        updateFrequency(node);
+        return node.value;
+    }
+
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            Node node = cache.get(key);
+            node.value = value;
+            updateFrequency(node);
+            return;
+        }
+
+        if (cache.size() == capacity) {
+            removeLFUNode();
+        }
+
+        Node newNode = new Node(key, value);
+        cache.put(key, newNode);
+
+        freqToNodes.putIfAbsent(1, new DoublyLinkedList());
+        freqToNodes.get(1).insertAtBack(newNode);
+    }
+
+    private void updateFrequency(Node node) {
+        int oldFrequency = node.frequency;
+        DoublyLinkedList frequencyDLL = freqToNodes.get(oldFrequency);
+        frequencyDLL.removeNode(node);
+
+        if (frequencyDLL.isEmpty()) {
+            freqToNodes.remove(oldFrequency);
+        }
+
+        node.frequency++;
+
+        freqToNodes.putIfAbsent(node.frequency, new DoublyLinkedList());
+        freqToNodes.get(node.frequency).insertAtBack(node);
+    }
+
+    private void removeLFUNode() {
+        Map.Entry<Integer, DoublyLinkedList> firstEntry = freqToNodes.firstEntry();
+        Integer minFrequency = firstEntry.getKey();
+        DoublyLinkedList minFreqDll = firstEntry.getValue();
+
+        Node nodeToRemove = minFreqDll.removeFront();
+        cache.remove(nodeToRemove.key);
+
+        if (minFreqDll.isEmpty()) {
+            freqToNodes.remove(minFrequency);
+        }
+    }
+}
+
+class Node {
+    int key, value, frequency;
+    Node previous, next;
+
+    Node(int key, int value) {
+        this.key = key;
+        this.value = value;
+        this.frequency = 1;
+    }
+}
+
+class DoublyLinkedList {
+    Node head, tail;
+
+    DoublyLinkedList() {
+        this.head = null;
+        this.tail = null;
+    }
+
+    void insertAtBack(Node node) {
+        if (head == null) {
+            head = tail = node;
+            node.previous = node.next = null;
+        } else {
+            node.previous = tail;
+            node.next = null;
+            tail.next = node;
+            tail = node;
+        }
+    }
+
+    Node removeFront() {
+        Node first = head;
+        head = head.next;
+
+        if (head == null) {
+            tail = null;
+        } else {
+            head.previous = null;
+        }
+        return first;
+    }
+
+    void removeNode(Node node) {
+        if (node == head) {
+            removeFront();
+            return;
+        }
+
+        if (node == tail) {
+            tail = node.previous;
+            tail.next = null;
+            return;
+        }
+
+        node.previous.next = node.next;
+        node.next.previous = node.previous;
+    }
+
+    boolean isEmpty() {
+        return head == null;
+    }
+}
+
+
+//Optimal implementation
 
 class LFUCache {
     private final int capacity; // Maximum capacity of the cache

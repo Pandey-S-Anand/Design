@@ -32,5 +32,145 @@ class MyHashSet {
 }
 
 
+/*
+The size of the hash table is chosen based on prime number selection to reduce collisions 
+in a hash table using separate chaining.
+
+Why Choose a Prime Number for SIZE?
+
+1. Reduces Collisions
+   - A prime number as the array size spreads out the keys more uniformly.
+   - This prevents patterns in the input keys from clustering into specific buckets.
+
+2. Works Well with Modulo Hashing
+   - The hash() function:
+     private int hash(int key) {
+         return key % SIZE;
+     }
+   - If SIZE were a power of 2 (e.g., 1024), the modulo operation would only depend on 
+     the least significant bits, leading to more collisions.
+   - A prime number ensures that all bits contribute to the hash, leading to a better distribution.
+
+3. Balances Space and Performance
+   - If the array is too small, collisions increase, making operations slower (O(n) in worst case).
+   - If the array is too large, space is wasted.
+
+   How to Choose a Good Hash Table Size?
+   - Estimate the number of elements (n) expected to be stored.
+   - Choose a prime number slightly larger than n (e.g., n * 1.2).
+   - If resizing dynamically, use prime numbers for rehashing (e.g., 1009 → 2003 → 4001 → 8009).
+*/
+
+/*
+Given the constraints:
+
+Key Range: 0 <= key <= 10^6  
+Operations: At most 10^4 calls to add, remove, and contains
+
+We need to choose a suitable hash table size (SIZE) to minimize collisions while keeping space usage efficient.  
+The problem specifies at most 10^4 operations, but this does not guarantee 10^4 distinct elements.  
+Assuming that many add operations will insert unique elements, we estimate n ≈ 10^4.
+
+Final Choice for SIZE: 10007  
+- Large enough to handle up to 10^4 unique keys with minimal collisions.  
+- Small enough to save space compared to using a table size of 10^6 (direct array).
+
+Table Size (SIZE) = 10007 (Prime number)  
+Load Factor (n / SIZE) ≈ 0.99 (Ideal for separate chaining)  
+Time Complexity (Average Case) = O(1) for add(), contains(), and remove()  
+Time Complexity (Worst Case, with heavy collisions) = O(n) (due to linked list traversal)  
+Space Complexity = O(n) (extra space for linked list nodes)
+*/
+
+
 //Optimal approach
 
+class MyHashSet {
+    // Node class represents each element in the linked list used for separate chaining.
+    private static class Node {
+        int data; // Data stored in the node (the key).
+        Node next; // Pointer to the next node in the chain.
+
+        // Constructor to initialize the node with the given data.
+        public Node(int data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
+    // Prime number chosen for the size of the hash table to reduce collisions.
+    private static final int SIZE = 10007; 
+    
+    // Array of buckets (each bucket holds a singly linked list of nodes).
+    private Node[] buckets;
+
+    // Constructor to initialize the hash table with empty buckets.
+    public MyHashSet() {
+        buckets = new Node[SIZE];
+    }
+
+
+    public void add(int key) {
+        int index = hash(key); // Calculate the bucket index for the key.
+        
+        // If the bucket is empty, insert the new key.
+        if (buckets[index] == null) {
+            buckets[index] = new Node(key);
+        } else {
+            // If the bucket is not empty, check if the key already exists in the list.
+            Node prevNode = null;
+            Node current = buckets[index];
+            while (current != null) {
+                if (current.data == key) {
+                    return; // Key already exists, no need to add.
+                }
+                prevNode = current;
+                current = current.next;
+            }
+            // Add the new key at the end of the singly linked list if not found.
+            prevNode.next = new Node(key);
+        }
+    }
+
+    public boolean contains(int key) {
+        int index = hash(key); // Calculate the bucket index for the key.
+        Node current = buckets[index]; // Start from the head of the list in the bucket.
+        
+        // Traverse the list in the bucket to search for the key.
+        while (current != null) {
+            if (current.data == key) {
+                return true; // Key found.
+            }
+            current = current.next; // Move to the next node.
+        }
+        return false; // Key not found.
+    }
+    
+    public void remove(int key) {
+        int index = hash(key); // Calculate the bucket index for the key.
+        Node previous = null;
+        Node current = buckets[index]; // Start from the head of the singly linked list in the bucket.
+        
+        // Traverse the singly linked list to find the key to remove.
+        while (current != null) {
+            if (current.data == key) {
+                // If key is found, remove it from the singly linked list.
+                if (current == buckets[index]) {
+                    // If the node to remove is the head, update the bucket to the next node.
+                    buckets[index] = current.next;
+                } else {
+                    // Otherwise, bypass the node by linking the previous node to the next node.
+                    previous.next = current.next;
+                }
+                return; // Key removed, exit.
+            }
+            previous = current;
+            current = current.next;
+        }
+    }
+
+    // Simple hash function to calculate the index of the bucket for a given key.
+    private int hash(int key) {
+        return key % SIZE; // Return the remainder of dividing the key by the size (number of buckets).
+    }
+}

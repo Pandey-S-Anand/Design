@@ -136,7 +136,7 @@ class MyHashSet {
         if (buckets[index] == null) {
             buckets[index] = new Node(key);
         } else {
-            // Check if the key already exists in the list.
+            // Check if the key already exists in the singly linked list.
             Node currentNode = buckets[index];
             while (currentNode != null) {
                 if (currentNode.data == key) {

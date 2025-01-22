@@ -1,0 +1,150 @@
+//Bruteforce approach
+
+class MyHashMap {
+    // Maximum possible size of keys (since constraints specify 0 <= key <= 10^6)
+    private static final int MAX_SIZE = 1000001;
+    
+    // Array to store key-value pairs (using direct indexing)
+    private int[] hashMap;
+
+    public MyHashMap() {
+        hashMap = new int[MAX_SIZE];
+        Arrays.fill(hashMap, -1); // Default value -1 indicates that the key does not exist.
+    }
+
+    public void put(int key, int value) {
+        hashMap[key] = value; //Inserts or updates a key-value pair in the hash map.
+    }
+
+    public int get(int key) {
+        return hashMap[key] == -1 ? -1 : hashMap[key]; // If the key is not present, returns -1 else the value associated with the given key.
+    }
+
+    public void remove(int key) {
+        hashMap[key] = -1; // deletion means marking the key as non-existent, we reset it to -1.
+    }
+}
+
+
+//Optimal approach
+
+class MyHashMap {
+    /**
+     * Node class represents each key-value pair in the hash map.
+     * Each node forms part of a singly linked list used for separate chaining.
+     */
+    private static class Node {
+        int key, value; // Key-value pair stored in the node.
+        Node next;
+
+        public Node(int key, int value) {
+            this.key = key;
+            this.value = value;
+            this.next = null;
+        }
+    }
+    // Prime number chosen for the size of the hash table to reduce collisions.
+    private static final int INITIAL_SIZE = 10007;
+
+    // Array of buckets, where each bucket holds a singly linked list of nodes with the same hash value.
+    private Node[] buckets;
+
+    // Load factor threshold to determine when resizing is required.
+    private double loadFactor;
+
+    // Tracks the current number of stored elements.
+    private int currentSize;
+
+    public MyHashMap() {
+        buckets = new Node[INITIAL_SIZE];
+        loadFactor = 0.75D; // Load factor is set to 0.75, meaning the hash table will resized when 75% full.
+        currentSize = 0;
+    }
+
+    public void put(int key, int value) {
+        // Resize the hash table if the load factor exceeds 75%.
+        if ((double) currentSize / buckets.length >= loadFactor) {
+            resize();
+        }
+
+        int index = hash(key); // Calculate the bucket index for the key.
+
+        // If the bucket is empty, create a new node and insert it.
+        if (buckets[index] == null) {
+            buckets[index] = new Node(key, value);
+        } else {
+            // Traverse the singly linked list to check if the key already exists.
+            Node currentNode = buckets[index];
+            while (currentNode != null) {
+                if (currentNode.key == key) {
+                    currentNode.value = value; // Key already exists, update its value.
+                    return;
+                }
+                currentNode = currentNode.next;
+            }
+            // If key is not found, add the new node at the head.
+            Node newNode = new Node(key, value);
+            newNode.next = buckets[index];
+            buckets[index] = newNode;
+        }
+        currentSize++; // Increment the count of stored elements.
+    }
+
+    public int get(int key) {
+        int index = hash(key); // Calculate the bucket index for the key.
+        Node currentNode = buckets[index]; // Start from the head of the singly linked list in the bucket.
+
+        // Traverse the singly linked list to search for the key.
+        while (currentNode != null) {
+            if (currentNode.key == key) {
+                return currentNode.value; // Key found, return its value.
+            }
+            currentNode = currentNode.next;
+        }
+        return -1; // Key not found.
+    }
+
+    public void remove(int key) {
+        int index = hash(key); // Calculate the bucket index for the key.
+
+        Node previousNode = null;
+        Node currentNode = buckets[index]; // Start from the head of the singly linked list in the bucket.
+
+        // Traverse the singly linked list to find the key.
+        while (currentNode != null) {
+            if (currentNode.key == key) {
+                // Remove the node by updating links.
+                if (currentNode == buckets[index]) {
+                    // If the node to remove is the head, update the head to the next node.
+                    buckets[index] = currentNode.next;
+                } else {
+                    // Otherwise, bypass the node.
+                    previousNode.next = currentNode.next;
+                }
+                currentSize--; // Decrement the count of stored elements.
+                return;
+            }
+            previousNode = currentNode;
+            currentNode = currentNode.next;
+        }
+    }
+
+    // Hash function to determine the index of the bucket for a given key.
+    private int hash(int key) {
+        return key % buckets.length;
+    }
+
+    private void resize() {
+        Node[] oldBuckets = buckets;
+        buckets = new Node[oldBuckets.length * 2]; // Double the bucket size.
+        currentSize = 0; // Reset size as put() will increment it.
+
+        // Rehash and insert all elements into the new hash table.
+        for (Node head : oldBuckets) {
+            while (head != null) {
+                put(head.key, head.value); // Reinsert using put() to handle new bucket indices.
+                head = head.next;
+            }
+        }
+    }
+}

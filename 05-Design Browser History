@@ -1,3 +1,35 @@
+//Method 1
+
+class BrowserHistory {
+    String[] history;
+    int currentPageIndex, maxForwardIndex;
+
+    public BrowserHistory(String homepage) {
+        history = new String[5000];
+        currentPageIndex = 0;
+        maxForwardIndex = 0;
+        history[currentPageIndex] = homepage;
+    }
+
+    public void visit(String url) {
+        history[++currentPageIndex] = url;
+        maxForwardIndex = currentPageIndex;
+    }
+
+    public String back(int steps) {
+        currentPageIndex = Math.max(currentPageIndex - steps, 0);
+        return history[currentPageIndex];
+    }
+
+    public String forward(int steps) {
+        currentPageIndex = Math.min(currentPageIndex + steps, maxForwardIndex);
+        return history[currentPageIndex];
+    }
+}
+
+
+//Method 2
+
 class BrowserHistory {
     // Node class representing each page in the browsing history
     private static class Node {

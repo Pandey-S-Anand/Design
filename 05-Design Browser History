@@ -1,1 +1,51 @@
+class BrowserHistory {
+    // Node class representing each page in the browsing history
+    private static class Node {
+        String url; // URL of the page
+        Node previous; // Pointer to the previous page
+        Node next; // Pointer to the next page
 
+        public Node(String url) {
+            this.url = url; // Initialize the node with the given URL
+        }
+    }
+
+    private Node currentPage; // Pointer to the current page in the browsing history
+
+    // Constructor initializes the browser history with the homepage
+    public BrowserHistory(String homepage) {
+        currentPage = new Node(homepage); // Create a new node for the homepage
+    }
+
+    // Visit a new URL, clearing forward history (if any) and updating the current page
+    public void visit(String url) {
+        Node newUrl = new Node(url); // Create a new node for the visited URL
+        currentPage.next = newUrl; // Link the current page to the new URL
+        newUrl.previous = currentPage; // Link the new URL back to the current page
+        currentPage = newUrl; // Update the current page pointer to the new URL
+    }
+
+    /*
+      If there are only x pages in the backward history, and the number of steps required to go backward
+      is more than x, stop at the first visited page. Otherwise, move only the specified number of pages backward.
+    */
+    public String back(int steps) {
+        while (steps > 0 && currentPage.previous != null) {
+            currentPage = currentPage.previous; // Move one step back
+            steps--;
+        }
+        return currentPage.url; // Return the current page URL after moving back
+    }
+    
+    /*
+      If there are only x pages in the forward history, and the number of steps required to go forward
+      is more than x, stop at the last visited page. Otherwise, move only the specified number of pages forward.
+    */
+    public String forward(int steps) {
+        while (steps > 0 && currentPage.next != null) {
+            currentPage = currentPage.next; // Move one step forward
+            steps--;
+        }
+        return currentPage.url; // Return the current page URL after moving forward
+    }
+}

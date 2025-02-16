@@ -11,8 +11,7 @@
 //Naive implementation
 
 public class Codec {
-    // Global variable to track the current index in the nodes array during
-    // deserialization
+    // Global variable to track the current index in the nodes array during deserialization
     private int index;
 
     // Encodes a tree to a single string.

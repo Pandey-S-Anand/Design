@@ -1,0 +1,70 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ * int val;
+ * TreeNode left;
+ * TreeNode right;
+ * TreeNode(int x) { val = x; }
+ * }
+ */
+
+public class Codec {
+    // Global variable to track the current index in the nodes array during
+    // deserialization
+    private int index;
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        // Base case: if the node is null, return "#" to indicate a null node
+        if (root == null) {
+            return "#";
+        }
+
+        // Recursively serialize the left and right subtrees
+        String serializedLeftSubtree = serialize(root.left);
+        String serializedRightSubtree = serialize(root.right);
+        
+        /*
+         * We are following a pre-order traversal where the root is serialized first,
+         * followed by the left subtree and then the right subtree. The node value,
+         * left subtree, and right subtree are combined into one serialized string, with
+         * commas separating the values.
+         */
+        String serializedTree = new StringBuilder().append(root.val).append(",").append(serializedLeftSubtree).append(",").append(serializedRightSubtree).toString();
+
+        return serializedTree;
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        // Reset the index for each deserialization
+        index = 0;
+
+        // Split the serialized string into an array of node values
+        String[] nodes = data.split(",");
+
+        // Begin deserialization using the helper method
+        return deserializeHelper(nodes);
+    }
+
+    // Helper method for deserialization that reconstructs the tree recursively
+    private TreeNode deserializeHelper(String[] nodes) {
+        // If the current node is "#", it represents a null node
+        if (nodes[index].equals("#")) {
+            index++; // Move the index forward to the next node
+            return null; // Return null to indicate no child node
+        }
+
+        // Create a new TreeNode using the current value
+        TreeNode node = new TreeNode(Integer.parseInt(nodes[index++]));
+
+        // Recursively build the left subtree
+        node.left = deserializeHelper(nodes);
+
+        // Recursively build the right subtree
+        node.right = deserializeHelper(nodes);
+
+        // Return the fully constructed node with its left and right subtrees
+        return node;
+    }
+}

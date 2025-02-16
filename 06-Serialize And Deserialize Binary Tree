@@ -103,7 +103,7 @@ public class Codec {
             index++; // Move index to the comma position
         }
 
-        int nodeValue = Integer.parseInt(data.substring(start, index)); // Convert the value to integer
+        int nodeValue = getNumber(data, start, index - 1);// Convert the value to integer
         index++; // Skip the comma
 
         // Create the node with the value
@@ -114,5 +114,21 @@ public class Codec {
         node.right = deserialize(data);
 
         return node;
+    }
+
+    private int getNumber(String data, int start, int end) {
+        int num = 0;
+        boolean isNegative = data.charAt(start) == '-'; // Check if the number is negative
+
+        // If the number is negative, start from the next character
+        start = isNegative ? start + 1 : start;
+
+        // Convert the digits into an integer
+        for (int i = start; i <= end; i++) {
+            num = num * 10 + data.charAt(i) - '0';
+        }
+
+        // If the number was negative, make the result negative
+        return isNegative ? -num : num;
     }
 }

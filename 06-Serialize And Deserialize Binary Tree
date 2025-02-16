@@ -11,6 +11,8 @@
 //Naive implementation
 
 public class Codec {
+    private static final String NULL_NODE = "#"; // String to represent null node
+    private static final String SEPARATOR = ","; // Separator for serialized data
     // Global variable to track the current index in the nodes array during deserialization
     private int index;
 
@@ -31,7 +33,7 @@ public class Codec {
          * left subtree, and right subtree are combined into one serialized string, with
          * commas separating the values.
          */
-        String serializedTree = new StringBuilder().append(root.val).append(",").append(serializedLeftSubtree).append(",").append(serializedRightSubtree).toString();
+        String serializedTree = new StringBuilder().append(root.val).append(SEPARATOR).append(serializedLeftSubtree).append(SEPARATOR).append(serializedRightSubtree).toString();
 
         return serializedTree;
     }
@@ -42,7 +44,7 @@ public class Codec {
         index = 0;
 
         // Split the serialized string into an array of node values
-        String[] nodes = data.split(",");
+        String[] nodes = data.split(SEPARATOR);
 
         // Begin deserialization using the helper method
         return deserializeHelper(nodes);
@@ -51,7 +53,7 @@ public class Codec {
     // Helper method for deserialization that reconstructs the tree recursively
     private TreeNode deserializeHelper(String[] nodes) {
         // If the current node is "#", it represents a null node
-        if (nodes[index].equals("#")) {
+        if (nodes[index].equals(NULL_NODE)) {
             index++; // Move the index forward to the next node
             return null; // Return null to indicate no child node
         }
@@ -72,9 +74,12 @@ public class Codec {
 
 
 
+
 //Optimal implementation
 
 public class Codec {
+    private static final char NULL_NODE = '#'; // String to represent null node
+    private static final char SEPARATOR = ','; // Separator for serialized data
     private int index = 0;
 
     public String serialize(TreeNode root) {
@@ -85,15 +90,15 @@ public class Codec {
         String serializedLeftSubtree = serialize(root.left);
         String serializedRightSubtree = serialize(root.right);
 
-        String serializedTree = new StringBuilder().append(root.val).append(",").append(serializedLeftSubtree).append(",").append(serializedRightSubtree).toString();
+        String serializedTree = new StringBuilder().append(root.val).append(SEPARATOR).append(serializedLeftSubtree).append(SEPARATOR).append(serializedRightSubtree).toString();
 
         return serializedTree;
     }
 
     // Decodes your encoded data to tree.
     public TreeNode deserialize(String data) {
-        // If the current node is "#" (null), return null and move to the next node
-        if (data.charAt(index) == '#') {
+        // If the current node is Null, return null and move to the next node
+        if (data.charAt(index) == NULL_NODE) {
             index += 2; // Skip the "#" and the comma
             return null;
         }

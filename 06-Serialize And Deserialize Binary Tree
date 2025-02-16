@@ -8,6 +8,8 @@
  * }
  */
 
+//Naive implementation
+
 public class Codec {
     // Global variable to track the current index in the nodes array during
     // deserialization
@@ -65,6 +67,53 @@ public class Codec {
         node.right = deserializeHelper(nodes);
 
         // Return the fully constructed node with its left and right subtrees
+        return node;
+    }
+}
+
+
+
+//Optimal implementation
+
+public class Codec {
+    private int index = 0;
+
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "#";
+        }
+
+        String serializedLeftSubtree = serialize(root.left);
+        String serializedRightSubtree = serialize(root.right);
+
+        String serializedTree = new StringBuilder().append(root.val).append(",").append(serializedLeftSubtree).append(",").append(serializedRightSubtree).toString();
+
+        return serializedTree;
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        // If the current node is "#" (null), return null and move to the next node
+        if (data.charAt(index) == '#') {
+            index += 2; // Skip the "#" and the comma
+            return null;
+        }
+
+        int start = index;
+        while (index < data.length() && data.charAt(index) != ',') {
+            index++; // Move index to the comma position
+        }
+
+        int nodeValue = Integer.parseInt(data.substring(start, index)); // Convert the value to integer
+        index++; // Skip the comma
+
+        // Create the node with the value
+        TreeNode node = new TreeNode(nodeValue);
+
+        // Recursively deserialize the left and right subtrees
+        node.left = deserialize(data);
+        node.right = deserialize(data);
+
         return node;
     }
 }

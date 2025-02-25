@@ -1,0 +1,88 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ * int val;
+ * TreeNode left;
+ * TreeNode right;
+ * TreeNode() {}
+ * TreeNode(int val) { this.val = val; }
+ * TreeNode(int val, TreeNode left, TreeNode right) {
+ * this.val = val;
+ * this.left = left;
+ * this.right = right;
+ * }
+ * }
+ */
+
+//Naive approach
+
+class BSTIterator {
+    private int index; // To track the current position in the inorder traversal list
+    private List<Integer> inorderTraversal; // Stores the inorder traversal of the BST
+
+    // Constructor: Initializes the iterator and populates the inorder traversal list
+    public BSTIterator(TreeNode root) {
+        index = -1; // Start before the first element (since calling next() should move forward)
+        inorderTraversal = new ArrayList<>();
+        findInorderTraversal(root); // Perform inorder traversal to populate the list
+    }
+
+    // Returns the next smallest element in the BST
+    public int next() {
+        return inorderTraversal.get(++index); // Move index forward and return the next element
+    }
+
+    // Returns true if there is a next element, false otherwise
+    public boolean hasNext() {
+        return index + 1 < inorderTraversal.size(); // Check if the next element exists
+    }
+
+    private void findInorderTraversal(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+
+        findInorderTraversal(root.left);
+        inorderTraversal.add(root.val);
+        findInorderTraversal(root.right);
+    }
+}
+
+
+//Optimal approach
+
+/**
+ * BSTIterator is just an iterative inorder traversal.
+ * The only difference is that we implement it lazily (process nodes one by one using next() instead of storing everything at once).
+ * This approach reduces space complexity from O(N) → O(h) by only storing left nodes on the stack.
+ */
+
+class BSTIterator {
+    private Stack<TreeNode> stack;  // Stack to store the nodes for inorder traversal
+
+    // Constructor: Initializes the iterator and pushes leftmost nodes onto the stack
+    public BSTIterator(TreeNode root) {
+        stack = new Stack<>();
+        pushLeftNodes(root);  // Push all left nodes to initialize the stack
+    }
+
+    // Returns the next smallest element in the BST
+    public int next() {
+        TreeNode node = stack.pop();  // Get the top node 
+        pushLeftNodes(node.right);    // Process the right subtree (if any)
+        return node.val;              // Return the value of the current node
+    }
+
+    // Returns true if there is a next element, false otherwise
+    public boolean hasNext() {
+        return !stack.isEmpty();  // If stack is not empty, there are more elements
+    }
+
+    // Helper function: Push all left nodes into the stack (inorder left traversal)
+    private void pushLeftNodes(TreeNode root) {
+        while (root != null) {
+            stack.push(root);
+            root = root.left;  // Move left
+        }
+    }
+}

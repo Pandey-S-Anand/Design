@@ -141,7 +141,7 @@ public class Codec {
 
 //Optimal approach
 
-//Method 1
+//Method 1 (Using preorder traversal)
 
 //Naive implementation
 
@@ -198,5 +198,217 @@ public class Codec {
     }
 }
 
+
 //Optimal implementation
 
+public class Codec {
+    private static final char SEPARATOR = ','; // Separator for serialized data
+    private int index;
+
+    public String serialize(TreeNode root) {
+        StringBuilder serializedTree = new StringBuilder();
+        preorderTraverse(root, serializedTree);
+        return serializedTree.toString();
+    }
+
+    private void preorderTraverse(TreeNode root, StringBuilder serializedTree) {
+        if (root == null) {
+            return;
+        }
+
+        serializedTree.append(root.val).append(SEPARATOR);
+        preorderTraverse(root.left, serializedTree);
+        preorderTraverse(root.right, serializedTree);
+    }
+
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) {
+            return null;
+        }
+        index = 0;
+        return deserialize(data, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    private TreeNode deserialize(String data, int min, int max) {
+        if (index == data.length()) {
+            return null;
+        }
+
+        int end = index;
+        while (end < data.length() && data.charAt(end) != SEPARATOR) {
+            end++; // Find the next comma which separates numbers
+        }
+
+        int value = getNumber(data, index, end - 1); // Extract the number
+
+        if (value < min || value > max) {
+            return null;
+        }
+
+        index = end + 1; // Move to the next value in the array
+
+        TreeNode node = new TreeNode(value);
+
+        node.left = deserialize(data, min, value);
+        node.right = deserialize(data, value, max);
+
+        return node;
+    }
+
+    private int getNumber(String data, int start, int end) {
+        int num = 0;
+
+        // Convert the digits into an integer
+        for (int i = start; i <= end; i++) {
+            num = num * 10 + data.charAt(i) - '0';
+        }
+
+        return num;
+    }
+}
+
+
+//Method 2 (Using postorder traversal)
+
+//Naive implementation
+
+public class Codec {
+    private int index; // To track the current index during deserialization
+
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "";
+        }
+
+        StringBuilder serializedTree = new StringBuilder();
+        postorderTraverse(root, serializedTree); // Perform postorder traversal to serialize the tree
+
+        // Remove the trailing comma
+        serializedTree.setLength(serializedTree.length() - 1);
+
+        return serializedTree.toString();
+    }
+
+    private void postorderTraverse(TreeNode root, StringBuilder serializedTree) {
+        if (root == null) {
+            return; // Base case: if the node is null, do nothing
+        }
+
+        postorderTraverse(root.left, serializedTree); // Traverse left subtree
+        postorderTraverse(root.right, serializedTree); // Traverse right subtree
+        serializedTree.append(root.val).append(","); // Append the current node's value
+    }
+
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) {
+            return null; // If the string is empty, the tree is null
+        }
+
+        String[] arr = data.split(",");
+        // Start from the last element since postorder is Left → Right → Root
+        index = arr.length - 1;
+        return deserialize(arr, Integer.MIN_VALUE, Integer.MAX_VALUE); // Start deserialization with bounds
+    }
+
+    private TreeNode deserialize(String[] arr, int min, int max) {
+        // Base case: If index exceeds array length, no more nodes can be created
+        if (index < 0) {
+            return null;
+        }
+
+        int value = Integer.parseInt(arr[index]);
+
+        // Check if the current value is within the valid range
+        if (value < min || value > max) {
+            return null; // If not, return null (BST property violation)
+        }
+
+        index--; // Move to the next (backwards) value in the array
+
+        TreeNode node = new TreeNode(value); // Create a new node with the current value
+
+        // Recursively build the right and left subtrees within their valid bounds
+        /*
+         * Since we are processing postorder (Left → Right → Root),
+         * we must first construct the **right** subtree, then the **left** subtree.
+         */
+        node.right = deserialize(arr, value, max);
+        node.left = deserialize(arr, min, value);
+
+        return node;
+    }
+}
+
+
+//Optimal implementation
+
+public class Codec {
+    private static final char SEPARATOR = ','; // Separator for serialized data
+    private int index;
+
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "";
+        }
+
+        StringBuilder serializedTree = new StringBuilder();
+        postorderTraverse(root, serializedTree);
+        serializedTree.setLength(serializedTree.length() - 1);
+        return serializedTree.toString();
+    }
+
+    private void postorderTraverse(TreeNode root, StringBuilder serializedTree) {
+        if (root == null) {
+            return;
+        }
+
+        postorderTraverse(root.left, serializedTree);
+        postorderTraverse(root.right, serializedTree);
+        serializedTree.append(root.val).append(SEPARATOR);
+    }
+
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) {
+            return null;
+        }
+        index = data.length() - 1;
+        return deserialize(data, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    private TreeNode deserialize(String data, int min, int max) {
+        if (index < 0) {
+            return null;
+        }
+
+        int start = index;
+        while (start >= 0 && data.charAt(start) != SEPARATOR) {
+            start--; // Find the next comma which separates numbers
+        }
+
+        int value = getNumber(data, start + 1, index); // Extract the number
+
+        if (value < min || value > max) {
+            return null;
+        }
+
+        index = start - 1; // Move to the next value (backward) in the array
+
+        TreeNode node = new TreeNode(value);
+
+        node.right = deserialize(data, value, max);
+        node.left = deserialize(data, min, value);
+
+        return node;
+    }
+
+    private int getNumber(String data, int start, int end) {
+        int num = 0;
+
+        // Convert the digits into an integer
+        for (int i = start; i <= end; i++) {
+            num = num * 10 + data.charAt(i) - '0';
+        }
+
+        return num;
+    }
+}

@@ -1,0 +1,202 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+
+//Naive approach
+
+//Naive implementation
+
+public class Codec {
+    private static final String NULL_NODE = "#"; // String to represent null node
+    private static final String SEPARATOR = ","; // Separator for serialized data
+    // Global variable to track the current index in the nodes array during deserialization
+    private int index;
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        // Base case: if the node is null, return "#" to indicate a null node
+        if (root == null) {
+            return "#";
+        }
+
+        // Recursively serialize the left and right subtrees
+        String serializedLeftSubtree = serialize(root.left);
+        String serializedRightSubtree = serialize(root.right);
+        
+        /*
+         * We are following a pre-order traversal where the root is serialized first,
+         * followed by the left subtree and then the right subtree. The node value,
+         * left subtree, and right subtree are combined into one serialized string, with
+         * commas separating the values.
+         */
+        String serializedTree = new StringBuilder().append(root.val).append(SEPARATOR).append(serializedLeftSubtree).append(SEPARATOR).append(serializedRightSubtree).toString();
+
+        return serializedTree;
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        // Reset the index for each deserialization
+        index = 0;
+
+        // Split the serialized string into an array of node values
+        String[] nodes = data.split(SEPARATOR);
+
+        // Begin deserialization using the helper method
+        return deserializeHelper(nodes);
+    }
+
+    // Helper method for deserialization that reconstructs the tree recursively
+    private TreeNode deserializeHelper(String[] nodes) {
+        // If the current node is "#", it represents a null node
+        if (nodes[index].equals(NULL_NODE)) {
+            index++; // Move the index forward to the next node
+            return null; // Return null to indicate no child node
+        }
+
+        // Create a new TreeNode using the current value
+        TreeNode node = new TreeNode(Integer.parseInt(nodes[index++]));
+
+        // Recursively build the left subtree
+        node.left = deserializeHelper(nodes);
+
+        // Recursively build the right subtree
+        node.right = deserializeHelper(nodes);
+
+        // Return the fully constructed node with its left and right subtrees
+        return node;
+    }
+}
+
+
+//Optimal implementation
+
+public class Codec {
+    private static final char NULL_NODE = '#'; // String to represent null node
+    private static final char SEPARATOR = ','; // Separator for serialized data
+    private int index = 0;
+
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "#";
+        }
+
+        String serializedLeftSubtree = serialize(root.left);
+        String serializedRightSubtree = serialize(root.right);
+
+        String serializedTree = new StringBuilder().append(root.val).append(SEPARATOR).append(serializedLeftSubtree).append(SEPARATOR).append(serializedRightSubtree).toString();
+
+        return serializedTree;
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        // If the current node is Null, return null and move to the next node
+        if (data.charAt(index) == NULL_NODE) {
+            index += 2; // Skip the "#" and the comma
+            return null;
+        }
+
+        int start = index;
+        while (index < data.length() && data.charAt(index) != ',') {
+            index++; // Move index to the comma position
+        }
+
+        int nodeValue = getNumber(data, start, index - 1);// Convert the value to integer
+        index++; // Skip the comma
+
+        // Create the node with the value
+        TreeNode node = new TreeNode(nodeValue);
+
+        // Recursively deserialize the left and right subtrees
+        node.left = deserialize(data);
+        node.right = deserialize(data);
+
+        return node;
+    }
+
+    private int getNumber(String data, int start, int end) {
+        int num = 0;
+        boolean isNegative = data.charAt(start) == '-'; // Check if the number is negative
+
+        // If the number is negative, start from the next character
+        start = isNegative ? start + 1 : start;
+
+        // Convert the digits into an integer
+        for (int i = start; i <= end; i++) {
+            num = num * 10 + data.charAt(i) - '0';
+        }
+
+        // If the number was negative, make the result negative
+        return isNegative ? -num : num;
+    }
+}
+
+
+//Optimal approach
+
+//Method 1
+
+//Naive implementation
+
+public class Codec {
+    private int index; // To track the current index during deserialization
+
+    public String serialize(TreeNode root) {
+        StringBuilder serializedTree = new StringBuilder();
+        preorderTraverse(root, serializedTree); // Perform preorder traversal to serialize the tree
+        return serializedTree.toString();
+    }
+
+    private void preorderTraverse(TreeNode root, StringBuilder serializedTree) {
+        if (root == null) {
+            return; // Base case: if the node is null, do nothing
+        }
+
+        serializedTree.append(root.val).append(","); // Append the current node's value
+        preorderTraverse(root.left, serializedTree); // Traverse left subtree
+        preorderTraverse(root.right, serializedTree); // Traverse right subtree
+    }
+
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) {
+            return null; // If the string is empty, the tree is null
+        }
+        index = 0;
+        String[] arr = data.split(",");
+        return deserialize(arr, Integer.MIN_VALUE, Integer.MAX_VALUE); // Start deserialization with bounds
+    }
+
+    private TreeNode deserialize(String[] arr, int min, int max) {
+        // Base case: If index exceeds array length, no more nodes can be created
+        if (index == arr.length) {
+            return null;
+        }
+
+        int value = Integer.parseInt(arr[index]);
+
+        // Check if the current value is within the valid range
+        if (value < min || value > max) {
+            return null; // If not, return null (BST property violation)
+        }
+
+        index++; // Move to the next value in the array
+
+        TreeNode node = new TreeNode(value); // Create a new node with the current value
+
+        // Recursively build the left and right subtrees within their valid bounds
+        node.left = deserialize(arr, min, value);
+        node.right = deserialize(arr, value, max);
+
+        return node;
+    }
+}
+
+//Optimal implementation
+

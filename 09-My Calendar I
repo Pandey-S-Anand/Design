@@ -1,0 +1,39 @@
+//Bruteforce approach
+
+public class MyCalendar {
+    private int[][] bookedEvents; // Array to store all booked events
+    private int lastIndex; // Index of the last booked event
+
+    public MyCalendar() {
+        bookedEvents = new int[1000][2]; // Can hold up to 1000 events
+        lastIndex = -1; // Initially no events booked
+    }
+
+    public boolean book(int startTime, int endTime) {
+        // If no event is booked yet, insert the first event
+        if (lastIndex == -1) {
+            insertEvent(startTime, endTime);
+            return true;
+        }
+
+        // Check for overlap with all previously booked events
+        for (int i = 0; i <= lastIndex; i++) {
+            if (isOverlappingEvent(bookedEvents[i], startTime, endTime)) {
+                return false; // Found an overlap
+            }
+        }
+
+        // If no overlap, insert the new event
+        insertEvent(startTime, endTime);
+        return true;
+    }
+
+    private boolean isOverlappingEvent(int[] event, int startTime, int endTime) {
+        return event[0] < endTime && event[1] > startTime;
+    }
+
+    // Inserts a new event into the calendar.
+    private void insertEvent(int startTime, int endTime) {
+        bookedEvents[++lastIndex] = new int[] { startTime, endTime };
+    }
+}

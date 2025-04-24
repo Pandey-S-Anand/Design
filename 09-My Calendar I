@@ -37,3 +37,83 @@ public class MyCalendar {
         bookedEvents[++lastIndex] = new int[] { startTime, endTime };
     }
 }
+
+
+// Better approach
+
+public class MyCalendar {
+    // Stores all booked events in sorted order by start time
+    private final List<int[]> bookedEvents;
+
+    // Constructor initializes the list of booked events
+    public MyCalendar() {
+        bookedEvents = new ArrayList<>();
+    }
+
+    public boolean book(int startTime, int endTime) {
+        // Case 1: If calendar is empty, simply insert the event
+        if (bookedEvents.isEmpty()) {
+            bookedEvents.add(new int[] { startTime, endTime });
+            return true;
+        }
+
+        int low = 0, high = bookedEvents.size() - 1;
+        int lastSmallerStartIndex = -1; // Index of the last event with start time < startTime
+
+        // Binary search to find the last event that starts before the new event
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            int currentEventStart = bookedEvents.get(mid)[0];
+
+            if (currentEventStart == startTime) {
+                // Conflict: an event already starts at the same time
+                return false;
+            }
+
+            if (currentEventStart < startTime) {
+                lastSmallerStartIndex = mid; // Potential event before new event
+                low = mid + 1; // Search right half
+            } else {
+                high = mid - 1; // Search left half
+            }
+        }
+
+        // Case 2: New event should be inserted at the beginning of the list . There’s no earlier event, so check for overlap with the first event in the list.
+        if (lastSmallerStartIndex == -1) {
+            int firstEventStart = bookedEvents.get(0)[0];
+            // Overlap exists if new event's end time goes beyond the first event's start time.
+            if (endTime > firstEventStart) {
+                return false;
+            }
+            // No overlaps, safe to insert 
+            bookedEvents.add(lastSmallerStartIndex + 1, new int[] { startTime, endTime });
+            return true;
+        }
+
+        //Case 3: New event comes after all existing events . It will be inserted at the end, but we must ensure it doesn't overlap with the last event 
+        if (lastSmallerStartIndex == bookedEvents.size() - 1) {
+            int lastEventEndTime = bookedEvents.get(lastSmallerStartIndex)[1];
+            // Overlap exists if the last event's end time goes beyond the new event's start time.
+            if (lastEventEndTime > startTime) {
+                return false;
+            }
+
+            // No overlaps, safe to insert 
+            bookedEvents.add(lastSmallerStartIndex + 1, new int[] { startTime, endTime });
+            return true;
+        }
+
+        // Case 4: New event fits between two existing events
+        int[] previousEvent = bookedEvents.get(lastSmallerStartIndex);
+        int[] nextEvent = bookedEvents.get(lastSmallerStartIndex + 1);
+
+        // Check for overlap with previous or next events: Overlap occurs if new event starts before previous ends, or ends after next starts
+        if (previousEvent[1] > startTime || endTime > nextEvent[0]) {
+            return false; // Overlaps with one of the neighbors
+        }
+
+        // No overlaps, safe to insert 
+        bookedEvents.add(lastSmallerStartIndex + 1, new int[] { startTime, endTime });
+        return true;
+    }
+}

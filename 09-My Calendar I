@@ -117,3 +117,37 @@ public class MyCalendar {
         return true;
     }
 }
+
+
+//Optimal approach
+
+public class MyCalendar {
+    // Key: Start time, Value: End time
+    private final TreeMap<Integer, Integer> calendar;
+
+    public MyCalendar() {
+        calendar = new TreeMap<>();
+    }
+
+    public boolean book(int startTime, int endTime) {
+        // Get the event with the largest start time < = startTime
+        Map.Entry<Integer, Integer> prev = calendar.floorEntry(startTime);
+
+        // Check overlap with previous event
+        if (prev != null && prev.getValue() > startTime) {
+            return false;
+        }
+
+        // Get the event with the smallest start time >= startTime
+        Map.Entry<Integer, Integer> next = calendar.ceilingEntry(startTime);
+
+        // Check overlap with next event
+        if (next != null && endTime > next.getKey()) {
+            return false;
+        }
+
+        // No overlap, insert the new event
+        calendar.put(startTime, endTime);
+        return true;
+    }
+}

@@ -1,0 +1,137 @@
+public class MyCalendarTwo {
+    /**
+     * Problem Summary:
+     * 
+     * - Each event is represented as a half-open interval [startTime, endTime).
+     *   This means:
+     *      - startTime is included.
+     *      - endTime is excluded.
+     *   Example:
+     *      [10, 20) includes all times >=10 and <20 but NOT 20.
+     * 
+     * Constraint:
+     * - startTime < endTime must always hold.
+     * 
+     * Triple Booking Rule:
+     * - Triple booking is not allowed.
+     * - Triple booking happens when three events overlap at any single point in time.
+     * 
+     * Plan:
+     * - Maintain two lists:
+     *    1. bookings: List of all successfully booked events.
+     *    2. overlaps: List of all regions where two bookings already overlap.
+     * 
+     * Approach:
+     * - Before adding a new event:
+     *    Step 1: Check if it overlaps with any existing interval in overlaps list.
+     *            (If yes, triple booking would occur → reject immediately.)
+     *    Step 2: Check overlap of new event with each booking.
+     *            (If overlapping, add the intersection to overlaps list.)
+     *    Step 3: If no triple booking, add the new event to bookings.    
+     * 
+     * We will process the following booking calls and track:
+     * - bookings: list of all successful [start, end) intervals
+     * - overlaps: list of all double-booked [start, end) intervals (no triple booking allowed)
+     * 
+     * Input sequence:
+     * 1. book(10, 20)
+     * 2. book(50, 60)
+     * 3. book(10, 40)
+     * 4. book(5, 15)
+     * 5. book(5, 10)
+     * 6. book(25, 55)
+     * 
+     * Results: [true, true, true, false, true, true]
+     * 
+     * ──────────────────────────────────────────────────────────────────
+     * Step 1: book(10, 20) → returns true
+     * - Check overlaps[] : empty → no triple booking
+     * - Update overlaps from bookings: bookings empty → none added
+     * - bookings = [[10, 20)]
+     * - overlaps = []
+     * 
+     * Step 2: book(50, 60) → returns true
+     * - Check overlaps[] : empty → no triple booking
+     * - Compare with bookings:
+     *   [10, 20) vs [50, 60) → no overlap
+     * - bookings = [[10, 20), [50, 60)]
+     * - overlaps = []
+     * 
+     * Step 3: book(10, 40) → returns true
+     * - Check overlaps[] : empty → no triple booking
+     * - Compare with bookings:
+     *   [10, 20) vs [10, 40) → overlap region is [max(10,10)=10, min(20,40)=20) → add [10, 20)
+     *   [50, 60) vs [10, 40) → no overlap
+     * - bookings = [[10, 20), [50, 60), [10, 40)]
+     * - overlaps = [[10, 20)]
+     * 
+     * Step 4: book(5, 15) → returns false
+     * - Check overlaps:
+     *   [10, 20) vs [5, 15) → 10 < 15 && 20 > 5 → true → would cause triple booking
+     * - Reject without modifying bookings or overlaps
+     * 
+     * Step 5: book(5, 10) → returns true
+     * - Check overlaps:
+     *   [10, 20) vs [5, 10) → 10 < 10 && 20 > 5 → false → safe
+     * - Compare with bookings:
+     *   [10, 20) vs [5, 10) → no overlap
+     *   [50, 60) vs [5, 10) → no overlap
+     *   [10, 40) vs [5, 10) → no overlap
+     * - bookings = [[10, 20), [50, 60), [10, 40), [5, 10)]
+     * - overlaps = [[10, 20)]
+     * 
+     * Step 6: book(25, 55) → returns true
+     * - Check overlaps:
+     *   [10, 20) vs [25, 55) → 10 < 55 && 20 > 25 → false → safe
+     * - Compare with bookings:
+     *   [10, 20) vs [25, 55) → no overlap
+     *   [50, 60) vs [25, 55) → overlap [max(50,25)=50, min(60,55)=55) → add [50, 55)
+     *   [10, 40) vs [25, 55) → overlap [max(10,25)=25, min(40,55)=40) → add [25, 40)
+     *   [5,  10) vs [25, 55) → no overlap
+     * - bookings = [[10, 20), [50, 60), [10, 40), [5, 10), [25, 55)]
+     * - overlaps = [[10, 20), [50, 55), [25, 40)]
+     * 
+     * Final state:
+     * bookings = [[10, 20), [50, 60), [10, 40), [5, 10), [25, 55)]
+     * overlaps = [[10, 20), [50, 55), [25, 40)]
+     */
+
+    // List to store all successfully booked events
+    private final List<int[]> bookings;
+
+    // Step 1: Check if new event overlaps with any existing double-booked intervals
+    private final List<int[]> overlaps;
+
+    // Constructor to initialize the bookings and overlaps lists
+    public MyCalendarTwo() {
+        bookings = new ArrayList<>();
+        overlaps = new ArrayList<>();
+    }
+
+    // Attempts to book a new event; returns true if successful, false otherwise
+    public boolean book(int startTime, int endTime) {
+        // Step 1: Check if this event causes a triple booking
+        for (int[] overlap : overlaps) {
+            if (isOverlapping(overlap, startTime, endTime)) {
+                return false; // Triple booking detected, reject booking
+            }
+        }
+
+        // Step 2: For every existing booking, find overlap with new event and add to overlaps list
+        for (int[] booked : bookings) {
+            if (isOverlapping(booked, startTime, endTime)) {
+                int overlapStart = Math.max(booked[0], startTime);
+                int overlapEnd = Math.min(booked[1], endTime);
+                overlaps.add(new int[] { overlapStart, overlapEnd });
+            }
+        }
+
+        // Step 3: Add this event to bookings list since no triple booking occurred
+        bookings.add(new int[] { startTime, endTime });
+        return true;
+    }
+
+    private boolean isOverlapping(int[] event, int startTime, int endTime) {
+        return event[0] < endTime && event[1] > startTime;
+    }
+}

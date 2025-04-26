@@ -1,7 +1,5 @@
 public class MyCalendarTwo {
     /**
-     * Problem Summary:
-     * 
      * - Each event is represented as a half-open interval [startTime, endTime).
      *   This means:
      *      - startTime is included.

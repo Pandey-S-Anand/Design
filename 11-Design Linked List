@@ -1,0 +1,199 @@
+// Custom implementation of a singly linked list
+class SinglyLinkedList {
+
+    // Definition of a node in the singly linked list
+    private static class ListNode {
+        private int val; // Value of the node
+        private ListNode next; // Pointer to the next node
+
+        // Constructor to initialize with a value
+        public ListNode(int val) {
+            this.val = val;
+            this.next = null;
+        }
+
+        // Default constructor
+        public ListNode() {
+            this.next = null;
+        }
+    }
+
+    private ListNode head; // Pointer to the head node
+    private ListNode tail; // Pointer to the tail node
+    private int size; // Keeps track of the number of nodes in the list
+
+    // Constructor to initialize an empty linked list
+    SinglyLinkedList() {
+        head = tail = null;
+        size = 0;
+    }
+
+    // Adds a new node with the given value at the head (beginning) of the list.
+    public void addAtHead(int val) {
+        ListNode node = new ListNode(val);
+
+        if (head == null) {
+            // List is empty, head and tail both point to the new node
+            head = tail = node;
+        } else {
+            // Insert node before the current head
+            node.next = head;
+            head = node;
+        }
+
+        size++;
+    }
+
+    //Adds a new node with the given value at the tail (end) of the list.
+    public void addAtTail(int val) {
+        ListNode node = new ListNode(val);
+
+        if (head == null) {
+            // List is empty, head and tail both point to the new node
+            head = tail = node;
+        } else {
+            // Add node after current tail
+            tail.next = node;
+            tail = node;
+        }
+
+        size++;
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index > size) {
+            return; // Index is beyond the current size
+        }
+
+        //If index is 0, inserts at head.
+        if (index == 0) {
+            addAtHead(val);
+            return;
+        }
+
+        //If index equals size, inserts at tail.
+        if (index == size) {
+            addAtTail(val);
+            return;
+        }
+
+        ListNode node = new ListNode(val);
+        ListNode currentNode = head;
+        ListNode prevNode = null;
+
+        // Traverse till the desired index 
+        while (index > 0) {
+            prevNode = currentNode;
+            currentNode = currentNode.next;
+            index--;
+        }
+
+        /* At this point:
+        - prevNode is the node after which the new node will be inserted
+        - currentNode is the node currently at the target index 
+        */
+
+        // Insert node between prevNode and currentNode
+        prevNode.next = node;
+        node.next = currentNode;
+
+        size++;
+    }
+
+    public int get(int index) {
+        if (index < 0 || index >= size) {
+            return -1; //Returns -1 if index is invalid.
+        }
+
+        ListNode currentNode = head;
+        while (index > 0) {
+            currentNode = currentNode.next;
+            index--;
+        }
+
+        return currentNode.val;
+    }
+
+    /**
+     * Deletes the node at the specified index.
+     * If index is invalid, no operation is performed.
+     */
+    public void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) {
+            return;
+        }
+
+        if (index == 0) {
+            if (size == 1) {
+                // Only one node in the list
+                head = tail = null;
+            } else {
+                deleteAtHead();
+            }
+            size--;
+            return;
+        }
+
+        ListNode currentNode = head;
+        ListNode prevNode = null;
+
+        // Traverse to the target index to find the node to be deleted
+        while (index > 0) {
+            prevNode = currentNode;
+            currentNode = currentNode.next;
+            index--;
+        }
+
+        /* At this point:
+         - currentNode points to the node that needs to be deleted
+         - prevNode is the node just before currentNode
+         */
+        // Case 1: Deleting the tail node
+        if (currentNode.next == null) {
+            prevNode.next = null;
+            tail = prevNode;
+        } else {
+            // Case 2: Deleting an intermediate node
+            prevNode.next = currentNode.next;
+            currentNode.next = null; // Help garbage collection
+        }
+
+        size--;
+    }
+
+    // Deletes the head (first) node from the list.
+    private void deleteAtHead() {
+        ListNode temp = head;
+        head = head.next;
+        temp.next = null;
+    }
+
+}
+
+class MyLinkedList {
+    private SinglyLinkedList singlyLinkedList;
+
+    public MyLinkedList() {
+        singlyLinkedList = new SinglyLinkedList();
+    }
+
+    public int get(int index) {
+        return singlyLinkedList.get(index);
+    }
+
+    public void addAtHead(int val) {
+        singlyLinkedList.addAtHead(val);
+    }
+
+    public void addAtTail(int val) {
+        singlyLinkedList.addAtTail(val);
+    }
+
+    public void addAtIndex(int index, int val) {
+        singlyLinkedList.addAtIndex(index, val);
+    }
+
+    public void deleteAtIndex(int index) {
+        singlyLinkedList.deleteAtIndex(index);
+    }
+}

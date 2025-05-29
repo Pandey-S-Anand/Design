@@ -1,3 +1,5 @@
+//Singly linked list implementation
+
 // Custom implementation of a singly linked list
 class SinglyLinkedList {
 
@@ -105,6 +107,11 @@ class SinglyLinkedList {
             return -1; //Returns -1 if index is invalid.
         }
 
+         // Fast return if requesting the last element
+        if (index == size - 1) {
+           return tail.val;
+        }
+
         ListNode currentNode = head;
         while (index > 0) {
             currentNode = currentNode.next;
@@ -195,5 +202,206 @@ class MyLinkedList {
 
     public void deleteAtIndex(int index) {
         singlyLinkedList.deleteAtIndex(index);
+    }
+}
+
+
+
+
+//Doubly linked list implementation
+
+// Custom implementation of a doubly linked list
+class DoublyLinkedList {
+    // Definition of a node in the doubly linked list
+    private static class ListNode {
+        int val; // Value of the node
+        ListNode prev; // Pointer to the previous node
+        ListNode next; // Pointer to the next node
+
+        // Constructor to initialize with a value
+        ListNode(int val) {
+            this.val = val;
+            this.prev = null;
+            this.next = null;
+        }
+
+        // Default constructor
+        ListNode() {
+            this.prev = null;
+            this.next = null;
+        }
+    }
+
+    private ListNode head; // Pointer to the head (first) node
+    private ListNode tail; // Pointer to the tail (last) node
+    private int size; // Number of nodes in the list
+
+    // Initializes an empty doubly linked list
+    public DoublyLinkedList() {
+        head = tail = null;
+        size = 0;
+    }
+
+    public void addAtHead(int val) {
+        ListNode newNode = new ListNode(val);
+
+        if (head == null) {
+            // Empty list: new node becomes both head and tail
+            head = tail = newNode;
+        } else {
+            // Link new node before current head
+            newNode.next = head;
+            head.prev = newNode;
+            head = newNode;
+        }
+
+        size++;
+    }
+
+    public void addAtTail(int val) {
+        ListNode newNode = new ListNode(val);
+
+        if (tail == null) {
+            // Empty list: new node becomes both head and tail
+            head = tail = newNode;
+        } else {
+            // Link new node after current tail
+            tail.next = newNode;
+            newNode.prev = tail;
+            tail = newNode;
+        }
+
+        size++;
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index < 0 || index > size) {
+            return; // Invalid index
+        }
+
+        if (index == 0) {
+            addAtHead(val);
+            return;
+        }
+
+        if (index == size) {
+            addAtTail(val);
+            return;
+        }
+
+        // Traverse to the node currently at the target index
+        ListNode current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+
+        // current is the node at 'index'; prevNode is before it
+        ListNode prevNode = current.prev;
+        ListNode newNode = new ListNode(val);
+
+        // Insert newNode between prevNode and current
+        prevNode.next = newNode;
+        newNode.prev = prevNode;
+        newNode.next = current;
+        current.prev = newNode;
+
+        size++;
+    }
+
+    public int get(int index) {
+        if (index < 0 || index >= size) {
+            return -1;
+        }
+
+        // Quick access to tail if requesting last element
+        if (index == size - 1) {
+            return tail.val;
+        }
+
+        // Traverse from head to the target index
+        ListNode current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+
+        return current.val;
+    }
+
+    public void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) {
+            // Invalid index
+            return;
+        }
+
+        if (index == 0) {
+            // Delete head node
+            if (size == 1) {
+                // List becomes empty
+                head = tail = null;
+            } else {
+                // Remove current head
+                head = head.next;
+                head.prev.next = null; // Help GC
+                head.prev = null;
+            }
+            size--;
+            return;
+        }
+
+        if (index == size - 1) {
+            // Delete tail node
+            tail = tail.prev;
+            tail.next.prev = null; // Help GC
+            tail.next = null;
+            size--;
+            return;
+        }
+
+        // Delete intermediate node
+        ListNode current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+
+        ListNode prevNode = current.prev;
+        ListNode nextNode = current.next;
+
+        // Bypass current node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+
+        // Help garbage collection
+        current.next = null;
+        current.prev = null;
+
+        size--;
+    }
+}
+
+class MyLinkedList {
+    private DoublyLinkedList doublyLinkedList;
+
+    public MyLinkedList() {
+        doublyLinkedList = new DoublyLinkedList();
+    }
+
+    public int get(int index) {
+        return doublyLinkedList.get(index);
+    }
+
+    public void addAtHead(int val) {
+        doublyLinkedList.addAtHead(val);
+    }
+
+    public void addAtTail(int val) {
+        doublyLinkedList.addAtTail(val);
+    }
+
+    public void addAtIndex(int index, int val) {
+        doublyLinkedList.addAtIndex(index, val);
+    }
+
+    public void deleteAtIndex(int index) {
+        doublyLinkedList.deleteAtIndex(index);
     }
 }
